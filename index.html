@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>桌面小狗</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent !important;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+      cursor: default;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* 外层负责“鼠标移入放大”，内层负责呼吸和跳跃，互不冲突 */
+    #pet {
+      display: inline-block;
+      transform: scale(1);
+      transform-origin: 50% 100%;
+      transition: transform 180ms cubic-bezier(0.2, 0.8, 0.3, 1);
+      will-change: transform;
+    }
+
+    #pet.hover {
+      transform: scale(1.06);
+    }
+
+    .breathe {
+      display: block;
+      transform-origin: 50% 100%;
+      animation: breathe 3.2s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    #dog {
+      display: block;
+      width: 150px;
+      height: auto;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      transform-origin: 50% 100%;
+    }
+
+    #dog.jumping {
+      animation: jump 560ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    #bubble {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      z-index: 10;
+      max-width: 214px;
+      padding: 8px 14px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      color: #333333;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, 8px) scale(0.9);
+      transform-origin: 50% 100%;
+      transition: opacity 160ms ease,
+                  transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.25);
+    }
+
+    #bubble.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    #bubble::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      width: 0;
+      height: 0;
+      margin-left: -8px;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid rgba(255, 255, 255, 0.97);
+    }
+
+    @keyframes breathe {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        transform: translateY(-2px) scale(1.015);
+      }
+    }
+
+    @keyframes jump {
+      0% {
+        transform: translateY(0) scale(1, 1);
+      }
+      18% {
+        transform: translateY(2px) scale(1.04, 0.96);
+      }
+      48% {
+        transform: translateY(-30px) scale(0.98, 1.03);
+      }
+      72% {
+        transform: translateY(0) scale(1.03, 0.97);
+      }
+      86% {
+        transform: translateY(-7px) scale(1, 1);
+      }
+      100% {
+        transform: translateY(0) scale(1, 1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="bubble" role="status" aria-live="polite"></div>
+
+  <div id="pet" aria-label="桌面小狗">
+    <div class="breathe">
+      <img id="dog" src="dog.png" alt="小狗">
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const pet = document.getElementById("pet");
+      const dog = document.getElementById("dog");
+      const bubble = document.getElementById("bubble");
+      let bubbleTimer = null;
+
+      // 供 Python 调用：切换鼠标悬停状态
+      window.petSetHover = function (hovered) {
+        pet.classList.toggle("hover", Boolean(hovered));
+      };
+
+      // 供 Python 调用：播放一次跳跃动画
+      window.petJump = function () {
+        dog.classList.remove("jumping");
+        // 强制重排，保证连续点击时动画可以重新播放
+        void dog.offsetWidth;
+        dog.classList.add("jumping");
+      };
+
+      dog.addEventListener("animationend", function (event) {
+        if (event.animationName === "jump") {
+          dog.classList.remove("jumping");
+        }
+      });
+
+      // 供 Python 调用：在头顶显示文字气泡
+      window.showBubble = function (text) {
+        bubble.textContent = text;
+        bubble.classList.add("show");
+
+        if (bubbleTimer) {
+          clearTimeout(bubbleTimer);
+        }
+        bubbleTimer = setTimeout(function () {
+          bubble.classList.remove("show");
+          bubbleTimer = null;
+        }, 2400);
+      };
+
+      // 直接拿浏览器打开 index.html 时，也能有完整交互
+      pet.addEventListener("mouseenter", function () {
+        window.petSetHover(true);
+      });
+      pet.addEventListener("mouseleave", function () {
+        window.petSetHover(false);
+      });
+      pet.addEventListener("click", function () {
+        window.petJump();
+      });
+      window.addEventListener("contextmenu", function (event) {
+        event.preventDefault();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+
+# 编辑器和 IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 敏感文件 / API Key（不要提交到仓库）
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*api_key*
+*apikey*
+secrets.json
+secrets.*
+credentials.json
+credentials.*
+token.json
+tokens.json
+config.local.*
+.claude/settings.local.json
+
+# 操作系统生成的文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 日志
+*.log
